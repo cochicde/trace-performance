@@ -1,0 +1,4 @@
+[submodule "forte"]
+	path = 4diac-forte
+	url = https://github.com/cochicde/4diac-forte
+	branch = trace-only-sifb
