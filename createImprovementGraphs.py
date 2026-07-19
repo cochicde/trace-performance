@@ -17,7 +17,15 @@ import seaborn as sns
 
 from common import ExecutedTest, read_and_process_file
 
-def plot_comparison(executed_tests, labels, save_path):
+def build_color_map(executed_tests, palette_name):
+    """
+    Assigns a fixed color to each test (by file_name) so that a given test is drawn with the same color in every plot, regardless of which other tests it is plotted alongside or in what order.
+    """
+    file_names = sorted({t.file_name for t in executed_tests})
+    palette = sns.color_palette(palette_name, len(file_names))
+    return {file_name: color for file_name, color in zip(file_names, palette)}
+
+def plot_execution_time(executed_tests, labels, save_path, color_map):
     """
     Plots a bar chart comparing mean execution times and their standard deviations for multiple datasets.
 
@@ -28,12 +36,13 @@ def plot_comparison(executed_tests, labels, save_path):
       executed_tests (list): List of objects containing 'mean_time' and 'std_dev' attributes for each dataset.
       labels (list): List of strings representing the labels for each dataset/bar.
       save_path (str): File path to save the generated plot image.
+      color_map (dict): Mapping of test file_name to a fixed color, so colors stay consistent across plots.
 
     Returns:
       None
     """
     fig, ax = plt.subplots(figsize=(14, 7))
-    colors = sns.color_palette("husl", len(executed_tests))
+    colors = [color_map[t.file_name] for t in executed_tests]
     x_positions = np.arange(len(labels))
     bars = ax.bar(
         x_positions,
@@ -59,7 +68,7 @@ def plot_comparison(executed_tests, labels, save_path):
     plt.savefig(save_path)
     plt.close()
 
-def plot_trace_sizes(executed_tests, labels, save_path):
+def plot_trace_sizes(executed_tests, labels, save_path, color_map):
     """
     Plots a bar chart showing the size of traces for each executed test.
 
@@ -67,10 +76,11 @@ def plot_trace_sizes(executed_tests, labels, save_path):
     The chart is saved to the specified path.
     """
     trace_sizes = [t.trace_size_mb for t in executed_tests if t.trace_size_mb is not None]
+    colors = [color_map[t.file_name] for t in executed_tests]
 
     fig, ax = plt.subplots(figsize=(14, 7))
     x_positions = np.arange(len(labels))
-    bars = ax.bar(x_positions, trace_sizes, color=sns.color_palette("pastel"), edgecolor='black')
+    bars = ax.bar(x_positions, trace_sizes, color=colors, edgecolor='black')
 
     ax.set_xticks(x_positions)
     ax.set_xticklabels(labels, rotation=30, ha="right", fontweight='bold')
@@ -155,6 +165,9 @@ if __name__ == "__main__":
       ]),
     ]
    
+    time_color_map = build_color_map(executed_tests, "husl")
+    size_color_map = build_color_map(executed_tests, "pastel")
+
     for image in plot_images:
       ordered_data = []
       labels = []
@@ -169,5 +182,5 @@ if __name__ == "__main__":
         time_plot_path = os.path.join(directory, base_filename + "_Time.png")
         size_plot_path = os.path.join(directory, base_filename + "_Size.png")
 
-        plot_comparison(ordered_data, labels, time_plot_path)
-        plot_trace_sizes(ordered_data, labels, size_plot_path)
+        plot_execution_time(ordered_data, labels, time_plot_path, time_color_map)
+        plot_trace_sizes(ordered_data, labels, size_plot_path, size_color_map)
