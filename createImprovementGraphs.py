@@ -14,8 +14,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import seaborn as sns
+import textwrap
 
 from common import ExecutedTest, read_and_process_file
+
+def wrap_labels(labels, width=15):
+    """
+    Wraps each label onto multiple lines (breaking at word boundaries) so that
+    no line exceeds the given character width.
+    """
+    return [textwrap.fill(label, width) for label in labels]
 
 def build_color_map(executed_tests, palette_name):
     """
@@ -51,7 +59,7 @@ def plot_execution_time(executed_tests, labels, save_path, color_map):
         capsize=5, color=colors, edgecolor='black')
 
     ax.set_xticks(x_positions)
-    ax.set_xticklabels(labels, rotation=30, ha="right", fontweight='bold')
+    ax.set_xticklabels(wrap_labels(labels), rotation=0, ha="center", fontweight='bold')
     ax.tick_params(axis='both', which='major', labelsize=14)
 
     for bar, t in zip(bars, executed_tests):
@@ -83,7 +91,7 @@ def plot_trace_sizes(executed_tests, labels, save_path, color_map):
     bars = ax.bar(x_positions, trace_sizes, color=colors, edgecolor='black')
 
     ax.set_xticks(x_positions)
-    ax.set_xticklabels(labels, rotation=30, ha="right", fontweight='bold')
+    ax.set_xticklabels(wrap_labels(labels), rotation=0, ha="center", fontweight='bold')
     ax.tick_params(axis='both', which='major', labelsize=14)
 
     for bar, size in zip(bars, trace_sizes):
